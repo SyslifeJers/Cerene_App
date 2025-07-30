@@ -312,8 +312,10 @@ namespace Cerene_App
             if (dataTable1.SelectedRows.Count == 0) return;
             int idx = dataTable1.SelectedRows[0].Index;
             if (idx < 0 || idx >= List_preguntas.Count) return;
+            int idcatalogo = List_preguntas[idx].Opciones.Count > 0 ?
+                List_preguntas[idx].Opciones.Max(o => o.Id) + 1 : 1;
 
-            string idStr = Microsoft.VisualBasic.Interaction.InputBox("Id de la opción:", "Agregar Opción", "0");
+            string idStr = Microsoft.VisualBasic.Interaction.InputBox("Id de la opción:", "Agregar Opción", idcatalogo.ToString());
             if (!int.TryParse(idStr, out int id)) return;
             string texto = Microsoft.VisualBasic.Interaction.InputBox("Texto de la opción:", "Agregar Opción", "");
             if (string.IsNullOrWhiteSpace(texto)) return;
