@@ -49,6 +49,7 @@ namespace Cerene_App
                 {
                     dataTable1.Rows[0].Selected = true;
                     MostrarOpciones(List_preguntas[0].Opciones);
+                    ActualizarOpcionesUI(List_preguntas[0].Multiple);
                 }
             }
 
@@ -63,6 +64,7 @@ namespace Cerene_App
             if (filtradas.Count > 0)
             {
                 MostrarOpciones(filtradas[0].Opciones);
+                ActualizarOpcionesUI(filtradas[0].Multiple);
             }
         }
         private void MostrarEnTabla(List<Pregunta> preguntas)
@@ -73,21 +75,34 @@ namespace Cerene_App
             dataTable1.Columns.Add("Numero", "#");
             dataTable1.Columns.Add("Texto", "Pregunta");
             dataTable1.Columns.Add("Tipo", "Tipo");
-            dataTable1.Columns.Add("Seccion", "Sección");
-            dataTable1.Columns.Add("Multiple", "¿Múltiple?");
+
+            var colSeccion = new DataGridViewComboBoxColumn
+            {
+                Name = "Seccion",
+                HeaderText = "Sección",
+                DataSource = cmbSecciones.DataSource
+            };
+            dataTable1.Columns.Add(colSeccion);
+
+            var colMultiple = new DataGridViewCheckBoxColumn
+            {
+                Name = "Multiple",
+                HeaderText = "¿Múltiple?"
+            };
+            dataTable1.Columns.Add(colMultiple);
             dataTable1.Columns.Add("Opciones", "Opciones");
             dataTable1.Columns.Add("Respuesta", "Respuesta Correcta");
 
             foreach (var p in preguntas)
             {
                 dataTable1.Rows.Add(
-                    p.Numero.ToString(),
+                    p.Numero,
                     p.Texto,
                     p.Tipo.ToString(),
                     p.Seccion,
-                    p.Multiple ? "Sí" : "No",
+                    p.Multiple,
                     p.OpcionesResumen,
-                    p.RespuestaCorrecta?.Texto ?? ""
+                    p.RespuestaCorrecta?.Texto ?? string.Empty
                 );
             }
 
@@ -95,6 +110,7 @@ namespace Cerene_App
             {
                 dataTable1.Rows[0].Selected = true;
                 MostrarOpciones(preguntas[0].Opciones);
+                ActualizarOpcionesUI(preguntas[0].Multiple);
             }
         }
 
@@ -185,6 +201,7 @@ namespace Cerene_App
                 if (idx >= 0 && idx < List_preguntas.Count)
                 {
                     MostrarOpciones(List_preguntas[idx].Opciones);
+                    ActualizarOpcionesUI(List_preguntas[idx].Multiple);
                 }
             }
         }
@@ -206,7 +223,18 @@ namespace Cerene_App
         {
             if (e.Row.Index >= List_preguntas.Count)
             {
-                List_preguntas.Add(new Pregunta());
+                var nueva = new Pregunta
+                {
+                    Numero = List_preguntas.Count > 0 ?
+                        List_preguntas.Max(p => p.Numero) + 1 : 1,
+                    Seccion = cmbSecciones.SelectedItem?.ToString() ?? string.Empty,
+                    Multiple = false
+                };
+                List_preguntas.Add(nueva);
+
+                dataTable1.Rows[e.Row.Index].Cells[0].Value = nueva.Numero;
+                dataTable1.Rows[e.Row.Index].Cells[3].Value = nueva.Seccion;
+                dataTable1.Rows[e.Row.Index].Cells[4].Value = nueva.Multiple;
             }
         }
 
@@ -244,6 +272,8 @@ namespace Cerene_App
                 case 4:
                     bool.TryParse(dataTable1.Rows[e.RowIndex].Cells[4].Value?.ToString(), out bool mult);
                     p.Multiple = mult;
+                    if (dataTable1.SelectedRows.Count > 0 && e.RowIndex == dataTable1.SelectedRows[0].Index)
+                        ActualizarOpcionesUI(mult);
                     break;
             }
         }
@@ -281,6 +311,7 @@ namespace Cerene_App
 
             List_preguntas[idx].Opciones.Add(new OpcionRespuesta { Id = id, Texto = texto });
             MostrarOpciones(List_preguntas[idx].Opciones);
+            ActualizarOpcionesUI(true);
         }
 
         private void btnRemoveOption_Click(object sender, EventArgs e)
@@ -293,6 +324,7 @@ namespace Cerene_App
 
             List_preguntas[idx].Opciones.RemoveAt(optIdx);
             MostrarOpciones(List_preguntas[idx].Opciones);
+            ActualizarOpcionesUI(true);
         }
 
         private void btnCatalogo_Click(object sender, EventArgs e)
@@ -309,10 +341,19 @@ namespace Cerene_App
                 {
                     List_preguntas[idx].Opciones.Add(opcion);
                     MostrarOpciones(List_preguntas[idx].Opciones);
+                    ActualizarOpcionesUI(true);
                 }
             });
 
             form.ShowDialog();
+        }
+
+        private void ActualizarOpcionesUI(bool habilitar)
+        {
+            dataOpciones.Enabled = habilitar;
+            btnAddOption.Enabled = habilitar;
+            btnRemoveOption.Enabled = habilitar;
+            btnCatalogo.Enabled = habilitar;
         }
 
     }
