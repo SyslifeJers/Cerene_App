@@ -130,30 +130,32 @@ namespace Cerene_App
             }
 
             var hojaPreguntas = libro.Worksheet("Preguntas");
+            int idp = 1;
             foreach (var fila in hojaPreguntas.RowsUsed().Skip(1))
             {
                 var pregunta = new Pregunta
                 {
-                    Numero = int.Parse(fila.Cell(1).GetString()),
-                    Texto = fila.Cell(2).GetString(),
-                    Tipo = Enum.TryParse(fila.Cell(3).GetString(), out TipoPregunta tipo) ? tipo : TipoPregunta.Desconocido,
-                    Seccion = fila.Cell(4).GetString(),
-                    Multiple = bool.TryParse(fila.Cell(5).GetString(), out bool mult) && mult
+                    Numero = idp,
+                    Texto = fila.Cell(1).GetString(),
+                    Tipo = Enum.TryParse(fila.Cell(2).GetString(), out TipoPregunta tipo) ? tipo : TipoPregunta.Desconocido,
+                    Seccion = fila.Cell(3).GetString(),
+                    Multiple = bool.TryParse(fila.Cell(4).GetString(), out bool mult) && mult
                 };
 
-                string opcionesIds = fila.Cell(6).GetString();
+                string opcionesIds = fila.Cell(5).GetString();
                 if (!string.IsNullOrWhiteSpace(opcionesIds))
                 {
-                    var ids = opcionesIds.Split('|').Select(id => int.Parse(id.Trim()));
+                    var ids = opcionesIds.Split(',').Select(id => int.Parse(id.Trim()));
                     pregunta.Opciones = catalogoOpciones.Where(o => ids.Contains(o.Id)).ToList();
                 }
 
-                if (int.TryParse(fila.Cell(7).GetString(), out int idResp))
+                if (int.TryParse(fila.Cell(6).GetString(), out int idResp))
                 {
                     pregunta.RespuestaCorrecta = catalogoOpciones.FirstOrDefault(o => o.Id == idResp);
                 }
 
                 preguntas.Add(pregunta);
+                idp++;
             }
         }
         private void MostrarPorSecciones(List<Pregunta> preguntas)
@@ -200,8 +202,15 @@ namespace Cerene_App
                 int idx = dataTable1.SelectedRows[0].Index;
                 if (idx >= 0 && idx < List_preguntas.Count)
                 {
-                    MostrarOpciones(List_preguntas[idx].Opciones);
-                    ActualizarOpcionesUI(List_preguntas[idx].Multiple);
+                    // Obtener el valor del primer campo (columna 0) de la fila seleccionada y restar 1
+                    var cellValue = dataTable1.Rows[idx].Cells[0].Value;
+                    int idMenosUno = 0;
+                    if (cellValue != null && int.TryParse(cellValue.ToString(), out int id))
+                    {
+                        idMenosUno = id - 1;
+                    }
+                    // Puedes usar idMenosUno aquí según lo necesites
+                    MostrarOpciones(List_preguntas[idMenosUno].Opciones);
                 }
             }
         }
