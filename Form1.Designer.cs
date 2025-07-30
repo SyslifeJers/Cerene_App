@@ -32,6 +32,7 @@
             dataOpciones = new DataGridView();
             btnTraer = new Button();
             cmbSecciones = new ComboBox();
+            btnAddQuestion = new Button();
             btnAddOption = new Button();
             btnRemoveOption = new Button();
             btnCatalogo = new Button();
@@ -66,6 +67,16 @@
             btnTraer.Text = "button1";
             btnTraer.UseVisualStyleBackColor = true;
             btnTraer.Click += btnTraer_Click;
+
+            // btnAddQuestion
+            //
+            btnAddQuestion.Location = new Point(242, 12);
+            btnAddQuestion.Name = "btnAddQuestion";
+            btnAddQuestion.Size = new Size(110, 23);
+            btnAddQuestion.TabIndex = 7;
+            btnAddQuestion.Text = "Nueva Pregunta";
+            btnAddQuestion.UseVisualStyleBackColor = true;
+            btnAddQuestion.Click += btnAddQuestion_Click;
 
             // btnAddOption
             //
@@ -119,6 +130,7 @@
             Controls.Add(btnAddOption);
             Controls.Add(cmbSecciones);
             Controls.Add(btnTraer);
+            Controls.Add(btnAddQuestion);
             Controls.Add(dataOpciones);
             Controls.Add(dataTable1);
             Name = "Form1";
@@ -134,6 +146,7 @@
         private DataGridView dataOpciones;
         private Button btnTraer;
         private ComboBox cmbSecciones;
+        private Button btnAddQuestion;
         private Button btnAddOption;
         private Button btnRemoveOption;
         private Button btnCatalogo;

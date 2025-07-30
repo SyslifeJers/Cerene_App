@@ -359,6 +359,32 @@ namespace Cerene_App
             form.ShowDialog();
         }
 
+        private void btnAddQuestion_Click(object sender, EventArgs e)
+        {
+            string seccionActual = cmbSecciones.SelectedItem?.ToString() ?? string.Empty;
+            int numero = List_preguntas.Count > 0 ? List_preguntas.Max(p => p.Numero) + 1 : 1;
+
+            var form = new PreguntaForm(seccionActual, numero);
+            if (form.ShowDialog() == DialogResult.OK && form.Result != null)
+            {
+                var pregunta = form.Result;
+                List_preguntas.Add(pregunta);
+                dataTable1.Rows.Add(
+                    pregunta.Numero,
+                    pregunta.Texto,
+                    pregunta.Tipo.ToString(),
+                    pregunta.Seccion,
+                    pregunta.Multiple,
+                    pregunta.OpcionesResumen,
+                    pregunta.RespuestaCorrecta?.Texto ?? string.Empty);
+
+                int idx = dataTable1.Rows.Count - 1;
+                dataTable1.Rows[idx].Selected = true;
+                MostrarOpciones(pregunta.Opciones);
+                ActualizarOpcionesUI(pregunta.Multiple);
+            }
+        }
+
         private void ActualizarOpcionesUI(bool habilitar)
         {
             dataOpciones.Enabled = habilitar;
