@@ -32,6 +32,9 @@
             dataOpciones = new DataGridView();
             btnTraer = new Button();
             cmbSecciones = new ComboBox();
+            btnAddOption = new Button();
+            btnRemoveOption = new Button();
+            btnCatalogo = new Button();
             ((System.ComponentModel.ISupportInitialize)dataTable1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataOpciones).BeginInit();
             SuspendLayout();
@@ -55,7 +58,7 @@
             dataOpciones.TabIndex = 3;
             // 
             // btnTraer
-            // 
+            //
             btnTraer.Location = new Point(21, 12);
             btnTraer.Name = "btnTraer";
             btnTraer.Size = new Size(75, 23);
@@ -63,9 +66,42 @@
             btnTraer.Text = "button1";
             btnTraer.UseVisualStyleBackColor = true;
             btnTraer.Click += btnTraer_Click;
-            // 
+
+            // btnAddOption
+            //
+            btnAddOption.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnAddOption.Location = new Point(12, 509);
+            btnAddOption.Name = "btnAddOption";
+            btnAddOption.Size = new Size(90, 23);
+            btnAddOption.TabIndex = 4;
+            btnAddOption.Text = "Agregar";
+            btnAddOption.UseVisualStyleBackColor = true;
+            btnAddOption.Click += btnAddOption_Click;
+
+            // btnRemoveOption
+            //
+            btnRemoveOption.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnRemoveOption.Location = new Point(108, 509);
+            btnRemoveOption.Name = "btnRemoveOption";
+            btnRemoveOption.Size = new Size(90, 23);
+            btnRemoveOption.TabIndex = 5;
+            btnRemoveOption.Text = "Quitar";
+            btnRemoveOption.UseVisualStyleBackColor = true;
+            btnRemoveOption.Click += btnRemoveOption_Click;
+
+            // btnCatalogo
+            //
+            btnCatalogo.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnCatalogo.Location = new Point(204, 509);
+            btnCatalogo.Name = "btnCatalogo";
+            btnCatalogo.Size = new Size(90, 23);
+            btnCatalogo.TabIndex = 6;
+            btnCatalogo.Text = "Catálogo";
+            btnCatalogo.UseVisualStyleBackColor = true;
+            btnCatalogo.Click += btnCatalogo_Click;
+            //
             // cmbSecciones
-            // 
+            //
             cmbSecciones.FormattingEnabled = true;
             cmbSecciones.Location = new Point(115, 12);
             cmbSecciones.Name = "cmbSecciones";
@@ -78,6 +114,9 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 545);
+            Controls.Add(btnRemoveOption);
+            Controls.Add(btnCatalogo);
+            Controls.Add(btnAddOption);
             Controls.Add(cmbSecciones);
             Controls.Add(btnTraer);
             Controls.Add(dataOpciones);
@@ -95,5 +134,8 @@
         private DataGridView dataOpciones;
         private Button btnTraer;
         private ComboBox cmbSecciones;
+        private Button btnAddOption;
+        private Button btnRemoveOption;
+        private Button btnCatalogo;
     }
 }

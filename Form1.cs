@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
 using System.Windows.Forms;
 using System.Drawing;
+using Microsoft.VisualBasic;
+using System.Linq;
 
 namespace Cerene_App
 {
@@ -14,15 +16,13 @@ namespace Cerene_App
             List_preguntas = new();
             dataTable1.AllowUserToAddRows = true;
             dataTable1.AllowUserToDeleteRows = true;
-            dataOpciones.AllowUserToAddRows = true;
-            dataOpciones.AllowUserToDeleteRows = true;
+            dataOpciones.AllowUserToAddRows = false;
+            dataOpciones.AllowUserToDeleteRows = false;
             dataTable1.SelectionChanged += dataTable1_SelectionChanged;
             dataTable1.UserAddedRow += dataTable1_UserAddedRow;
             dataTable1.UserDeletingRow += dataTable1_UserDeletingRow;
             dataTable1.CellValueChanged += dataTable1_CellValueChanged;
 
-            dataOpciones.UserAddedRow += dataOpciones_UserAddedRow;
-            dataOpciones.UserDeletingRow += dataOpciones_UserDeletingRow;
             dataOpciones.CellValueChanged += dataOpciones_CellValueChanged;
         }
 
@@ -248,23 +248,6 @@ namespace Cerene_App
             }
         }
 
-        private void dataOpciones_UserAddedRow(object sender, DataGridViewRowEventArgs e)
-        {
-            if (dataTable1.SelectedRows.Count == 0) return;
-            int idx = dataTable1.SelectedRows[0].Index;
-            if (idx < 0 || idx >= List_preguntas.Count) return;
-            List_preguntas[idx].Opciones.Add(new OpcionRespuesta());
-        }
-
-        private void dataOpciones_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
-        {
-            if (dataTable1.SelectedRows.Count == 0) return;
-            int idx = dataTable1.SelectedRows[0].Index;
-            if (idx < 0 || idx >= List_preguntas.Count) return;
-            int optIndex = e.Row.Index;
-            if (optIndex >= 0 && optIndex < List_preguntas[idx].Opciones.Count)
-                List_preguntas[idx].Opciones.RemoveAt(optIndex);
-        }
 
         private void dataOpciones_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
@@ -283,6 +266,53 @@ namespace Cerene_App
                     opt.Texto = dataOpciones.Rows[e.RowIndex].Cells[1].Value?.ToString() ?? string.Empty;
                     break;
             }
+        }
+
+        private void btnAddOption_Click(object sender, EventArgs e)
+        {
+            if (dataTable1.SelectedRows.Count == 0) return;
+            int idx = dataTable1.SelectedRows[0].Index;
+            if (idx < 0 || idx >= List_preguntas.Count) return;
+
+            string idStr = Microsoft.VisualBasic.Interaction.InputBox("Id de la opción:", "Agregar Opción", "0");
+            if (!int.TryParse(idStr, out int id)) return;
+            string texto = Microsoft.VisualBasic.Interaction.InputBox("Texto de la opción:", "Agregar Opción", "");
+            if (string.IsNullOrWhiteSpace(texto)) return;
+
+            List_preguntas[idx].Opciones.Add(new OpcionRespuesta { Id = id, Texto = texto });
+            MostrarOpciones(List_preguntas[idx].Opciones);
+        }
+
+        private void btnRemoveOption_Click(object sender, EventArgs e)
+        {
+            if (dataTable1.SelectedRows.Count == 0 || dataOpciones.SelectedRows.Count == 0) return;
+            int idx = dataTable1.SelectedRows[0].Index;
+            int optIdx = dataOpciones.SelectedRows[0].Index;
+            if (idx < 0 || idx >= List_preguntas.Count) return;
+            if (optIdx < 0 || optIdx >= List_preguntas[idx].Opciones.Count) return;
+
+            List_preguntas[idx].Opciones.RemoveAt(optIdx);
+            MostrarOpciones(List_preguntas[idx].Opciones);
+        }
+
+        private void btnCatalogo_Click(object sender, EventArgs e)
+        {
+            if (CatalogoOpciones.Count == 0) return;
+
+            var form = new CatalogoForm(CatalogoOpciones, opcion =>
+            {
+                if (dataTable1.SelectedRows.Count == 0) return;
+                int idx = dataTable1.SelectedRows[0].Index;
+                if (idx < 0 || idx >= List_preguntas.Count) return;
+
+                if (!List_preguntas[idx].Opciones.Any(o => o.Id == opcion.Id))
+                {
+                    List_preguntas[idx].Opciones.Add(opcion);
+                    MostrarOpciones(List_preguntas[idx].Opciones);
+                }
+            });
+
+            form.ShowDialog();
         }
 
     }
