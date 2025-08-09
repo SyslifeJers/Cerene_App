@@ -1,8 +1,8 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,7 +11,8 @@ namespace Cerene_App
     public class ExamForm : Form
     {
         public int? IdExamen { get; private set; }
-        public string ApiLink { get; set; } = ApiConfig.InsertExamen;
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public string ApiLink { get; set; }
 
         private ComboBox cmbAreas = new();
         private TextBox txtUsuario = new();
@@ -60,13 +61,16 @@ namespace Cerene_App
             UIStyleHelper.ApplyTheme(this);
         }
 
+        // ...
+
         private async Task CargarAreasAsync()
         {
             try
             {
                 using var http = new HttpClient();
-                string json = await http.GetStringAsync("https://terapia.clinicacerene.com/areas/get_areas.php");
-                var areas = JsonSerializer.Deserialize<List<Area>>(json);
+                ApiLink = ApiConfig.GetAreas;
+                string json = await http.GetStringAsync(ApiLink);
+                var areas = JsonConvert.DeserializeObject<List<Area>>(json);
                 cmbAreas.DataSource = areas;
                 cmbAreas.DisplayMember = "nombre_area";
                 cmbAreas.ValueMember = "id_area";
@@ -95,11 +99,12 @@ namespace Cerene_App
             try
             {
                 using var http = new HttpClient();
-                string json = JsonSerializer.Serialize(datos);
+                string json = JsonConvert.SerializeObject(datos);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
+                ApiLink = ApiConfig.InsertExamen;
                 var resp = await http.PostAsync(ApiLink, content);
                 string respJson = await resp.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ExamenResponse>(respJson);
+                var result = JsonConvert.DeserializeObject<ExamenResponse>(respJson);
                 if (result != null && result.success)
                 {
                     IdExamen = result.id_examen;
@@ -121,6 +126,7 @@ namespace Cerene_App
         {
             public int id_area { get; set; }
             public string nombre_area { get; set; } = string.Empty;
+            public string descripcion { get; set; } = string.Empty;
         }
 
         private class ExamenResponse
