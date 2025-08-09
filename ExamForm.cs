@@ -57,6 +57,7 @@ namespace Cerene_App
             Controls.Add(btnGuardar);
 
             Load += async (s, e) => await CargarAreasAsync();
+            UIStyleHelper.ApplyTheme(this);
         }
 
         private async Task CargarAreasAsync()

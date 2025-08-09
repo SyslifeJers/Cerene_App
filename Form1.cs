@@ -15,6 +15,7 @@ namespace Cerene_App
         public Form1()
         {
             InitializeComponent();
+            UIStyleHelper.ApplyTheme(this);
             List_preguntas = new();
             dataTable1.AllowUserToAddRows = true;
             dataTable1.AllowUserToDeleteRows = true;
