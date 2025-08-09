@@ -62,6 +62,7 @@ namespace Cerene_App
                 DialogResult = DialogResult.OK;
                 Close();
             };
+            UIStyleHelper.ApplyTheme(this);
         }
     }
 }

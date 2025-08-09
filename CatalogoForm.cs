@@ -37,6 +37,7 @@ namespace Cerene_App
             };
 
             Controls.Add(grid);
+            UIStyleHelper.ApplyTheme(this);
         }
     }
 }
