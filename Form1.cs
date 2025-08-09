@@ -10,6 +10,8 @@ namespace Cerene_App
     {
         private List<Pregunta> List_preguntas;
         private List<OpcionRespuesta> CatalogoOpciones = new();
+        private int idExamen;
+        private readonly string examenLink = ApiConfig.InsertExamen;
         public Form1()
         {
             InitializeComponent();
@@ -24,6 +26,16 @@ namespace Cerene_App
             dataTable1.CellValueChanged += dataTable1_CellValueChanged;
 
             dataOpciones.CellValueChanged += dataOpciones_CellValueChanged;
+
+            var examForm = new ExamForm { ApiLink = examenLink };
+            if (examForm.ShowDialog() == DialogResult.OK && examForm.IdExamen.HasValue)
+            {
+                idExamen = examForm.IdExamen.Value;
+            }
+            else
+            {
+                Close();
+            }
         }
 
         private void btnTraer_Click(object sender, EventArgs e)
@@ -55,6 +67,15 @@ namespace Cerene_App
 
          
 
+        }
+
+        private readonly string seccionLink = ApiConfig.InsertSeccion;
+
+        private async void btnEnviar_Click(object? sender, EventArgs e)
+        {
+            var uploader = new QuestionUploader(seccionLink);
+            await uploader.EnviarPreguntasAsync(idExamen, List_preguntas);
+            MessageBox.Show("Preguntas enviadas correctamente");
         }
         private void comboBoxSecciones_SelectedIndexChanged(object sender, EventArgs e)
         {

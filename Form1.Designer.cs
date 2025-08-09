@@ -36,6 +36,7 @@
             btnAddOption = new Button();
             btnRemoveOption = new Button();
             btnCatalogo = new Button();
+            btnEnviar = new Button();
             ((System.ComponentModel.ISupportInitialize)dataTable1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataOpciones).BeginInit();
             SuspendLayout();
@@ -110,6 +111,16 @@
             btnCatalogo.Text = "Catálogo";
             btnCatalogo.UseVisualStyleBackColor = true;
             btnCatalogo.Click += btnCatalogo_Click;
+
+            // btnEnviar
+            //
+            btnEnviar.Location = new Point(358, 12);
+            btnEnviar.Name = "btnEnviar";
+            btnEnviar.Size = new Size(110, 23);
+            btnEnviar.TabIndex = 8;
+            btnEnviar.Text = "Subir";
+            btnEnviar.UseVisualStyleBackColor = true;
+            btnEnviar.Click += btnEnviar_Click;
             //
             // cmbSecciones
             //
@@ -131,6 +142,7 @@
             Controls.Add(cmbSecciones);
             Controls.Add(btnTraer);
             Controls.Add(btnAddQuestion);
+            Controls.Add(btnEnviar);
             Controls.Add(dataOpciones);
             Controls.Add(dataTable1);
             Name = "Form1";
@@ -150,5 +162,6 @@
         private Button btnAddOption;
         private Button btnRemoveOption;
         private Button btnCatalogo;
+        private Button btnEnviar;
     }
 }
