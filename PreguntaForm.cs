@@ -56,7 +56,7 @@ namespace Cerene_App
                     Numero = (int)numNumero.Value,
                     Texto = txtTexto.Text,
                     Tipo = (TipoPregunta)cmbTipo.SelectedItem!,
-                    Seccion = txtSeccion.Text,
+                    Seccion = new Seccion { Nombre = txtSeccion.Text },
                     Multiple = chkMultiple.Checked
                 };
                 DialogResult = DialogResult.OK;

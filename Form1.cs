@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using Microsoft.VisualBasic;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Cerene_App
 {
@@ -54,10 +55,14 @@ namespace Cerene_App
                 Importar(ofd.FileName, out preguntas, out catalogo);
 
                 MostrarEnTabla(preguntas);
-                var secciones = preguntas.Select(p => p.Seccion).Distinct().ToList();
+                var secciones = preguntas.Select(p => p.Seccion)
+                                         .OfType<Seccion>()
+                                         .Distinct()
+                                         .ToList();
                 List_preguntas = new(preguntas);
                 CatalogoOpciones = new(catalogo);
                 cmbSecciones.DataSource = secciones;
+                cmbSecciones.DisplayMember = nameof(Seccion.Nombre);
                 if (dataTable1.Rows.Count > 0)
                 {
                     dataTable1.Rows[0].Selected = true;
@@ -80,13 +85,17 @@ namespace Cerene_App
         }
         private void comboBoxSecciones_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string seccionSeleccionada = cmbSecciones.SelectedItem.ToString();
-            var filtradas = List_preguntas.Where(p => p.Seccion == seccionSeleccionada).ToList();
-            MostrarEnTabla(filtradas);
-            if (filtradas.Count > 0)
+            if (cmbSecciones.SelectedItem is Seccion seccionSeleccionada)
             {
-                MostrarOpciones(filtradas[0].Opciones);
-                ActualizarOpcionesUI(filtradas[0].Multiple);
+                var filtradas = List_preguntas
+                    .Where(p => p.Seccion != null && p.Seccion.Nombre == seccionSeleccionada.Nombre)
+                    .ToList();
+                MostrarEnTabla(filtradas);
+                if (filtradas.Count > 0)
+                {
+                    MostrarOpciones(filtradas[0].Opciones);
+                    ActualizarOpcionesUI(filtradas[0].Multiple);
+                }
             }
         }
         private void MostrarEnTabla(List<Pregunta> preguntas)
@@ -102,7 +111,9 @@ namespace Cerene_App
             {
                 Name = "Seccion",
                 HeaderText = "Sección",
-                DataSource = cmbSecciones.DataSource
+                DataSource = cmbSecciones.DataSource,
+                DisplayMember = nameof(Seccion.Nombre),
+                ValueMember = nameof(Seccion.Nombre)
             };
             dataTable1.Columns.Add(colSeccion);
 
@@ -121,7 +132,7 @@ namespace Cerene_App
                     p.Numero,
                     p.Texto,
                     p.Tipo.ToString(),
-                    p.Seccion,
+                    p.Seccion?.Nombre,
                     p.Multiple,
                     p.OpcionesResumen,
                     p.RespuestaCorrecta?.Texto ?? string.Empty
@@ -160,7 +171,7 @@ namespace Cerene_App
                     Numero = idp,
                     Texto = fila.Cell(1).GetString(),
                     Tipo = Enum.TryParse(fila.Cell(2).GetString(), out TipoPregunta tipo) ? tipo : TipoPregunta.Desconocido,
-                    Seccion = fila.Cell(3).GetString(),
+                    Seccion = new Seccion { Nombre = fila.Cell(3).GetString() },
                     Multiple = bool.TryParse(fila.Cell(4).GetString(), out bool mult) && mult
                 };
 
@@ -192,7 +203,7 @@ namespace Cerene_App
             dataTable1.Columns.Add("Opciones", "Opciones");
             dataTable1.Columns.Add("Respuesta", "Respuesta");
 
-            var agrupado = preguntas.GroupBy(p => p.Seccion);
+            var agrupado = preguntas.GroupBy(p => p.Seccion?.Nombre);
 
             foreach (var grupo in agrupado)
             {
@@ -258,13 +269,13 @@ namespace Cerene_App
                 {
                     Numero = List_preguntas.Count > 0 ?
                         List_preguntas.Max(p => p.Numero) + 1 : 1,
-                    Seccion = cmbSecciones.SelectedItem?.ToString() ?? string.Empty,
+                    Seccion = (cmbSecciones.SelectedItem as Seccion) ?? new Seccion(),
                     Multiple = false
                 };
                 List_preguntas.Add(nueva);
 
                 dataTable1.Rows[e.Row.Index].Cells[0].Value = nueva.Numero;
-                dataTable1.Rows[e.Row.Index].Cells[3].Value = nueva.Seccion;
+                dataTable1.Rows[e.Row.Index].Cells[3].Value = nueva.Seccion.Nombre;
                 dataTable1.Rows[e.Row.Index].Cells[4].Value = nueva.Multiple;
             }
         }
@@ -298,7 +309,7 @@ namespace Cerene_App
                         p.Tipo = tipo;
                     break;
                 case 3:
-                    p.Seccion = dataTable1.Rows[e.RowIndex].Cells[3].Value?.ToString() ?? string.Empty;
+                    p.Seccion = new Seccion { Nombre = dataTable1.Rows[e.RowIndex].Cells[3].Value?.ToString() ?? string.Empty };
                     break;
                 case 4:
                     bool.TryParse(dataTable1.Rows[e.RowIndex].Cells[4].Value?.ToString(), out bool mult);
@@ -383,7 +394,7 @@ namespace Cerene_App
 
         private void btnAddQuestion_Click(object sender, EventArgs e)
         {
-            string seccionActual = cmbSecciones.SelectedItem?.ToString() ?? string.Empty;
+            string seccionActual = (cmbSecciones.SelectedItem as Seccion)?.Nombre ?? string.Empty;
             int numero = List_preguntas.Count > 0 ? List_preguntas.Max(p => p.Numero) + 1 : 1;
 
             var form = new PreguntaForm(seccionActual, numero);
@@ -391,11 +402,21 @@ namespace Cerene_App
             {
                 var pregunta = form.Result;
                 List_preguntas.Add(pregunta);
+
+                if (pregunta.Seccion != null && cmbSecciones.DataSource is List<Seccion> secs &&
+                    !secs.Any(s => s.Nombre == pregunta.Seccion.Nombre))
+                {
+                    secs.Add(pregunta.Seccion);
+                    cmbSecciones.DataSource = null;
+                    cmbSecciones.DataSource = secs;
+                    cmbSecciones.DisplayMember = nameof(Seccion.Nombre);
+                }
+
                 dataTable1.Rows.Add(
                     pregunta.Numero,
                     pregunta.Texto,
                     pregunta.Tipo.ToString(),
-                    pregunta.Seccion,
+                    pregunta.Seccion?.Nombre,
                     pregunta.Multiple,
                     pregunta.OpcionesResumen,
                     pregunta.RespuestaCorrecta?.Texto ?? string.Empty);
