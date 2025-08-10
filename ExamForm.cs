@@ -15,7 +15,7 @@ namespace Cerene_App
         public string ApiLink { get; set; }
 
         private ComboBox cmbAreas = new();
-        private TextBox txtUsuario = new();
+        private ComboBox cmbUsuario = new();
         private TextBox txtNombre = new();
         private Button btnGuardar = new();
 
@@ -35,9 +35,9 @@ namespace Cerene_App
             cmbAreas.Width = 200;
 
             var lblUsuario = new Label { Text = "Usuario", Left = 10, Top = 45, Width = 80 };
-            txtUsuario.Left = 100;
-            txtUsuario.Top = 40;
-            txtUsuario.Width = 200;
+            cmbUsuario.Left = 100;
+            cmbUsuario.Top = 40;
+            cmbUsuario.Width = 200;
 
             var lblNombre = new Label { Text = "Nombre", Left = 10, Top = 75, Width = 80 };
             txtNombre.Left = 100;
@@ -52,16 +52,34 @@ namespace Cerene_App
             Controls.Add(lblArea);
             Controls.Add(cmbAreas);
             Controls.Add(lblUsuario);
-            Controls.Add(txtUsuario);
+            Controls.Add(cmbUsuario);
             Controls.Add(lblNombre);
             Controls.Add(txtNombre);
             Controls.Add(btnGuardar);
 
             Load += async (s, e) => await CargarAreasAsync();
+            Load += async (s, e) => await CargarUsuariosAsync();
             UIStyleHelper.ApplyTheme(this);
         }
 
-        // ...
+        //necesito cargar los usuarios en el combobox cmbUsuario
+        private async Task CargarUsuariosAsync()
+        {
+            try
+            {
+                using var http = new HttpClient();
+                ApiLink = ApiConfig.GetUsuarios;
+                string json = await http.GetStringAsync(ApiLink);
+                var usuarios = JsonConvert.DeserializeObject<List<Usuario>>(json);
+                cmbUsuario.DataSource = usuarios;
+                cmbUsuario.DisplayMember = "name";
+                cmbUsuario.ValueMember = "id";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar usuarios: {ex.Message}");
+            }
+        }
 
         private async Task CargarAreasAsync()
         {
@@ -83,7 +101,7 @@ namespace Cerene_App
 
         private async Task GuardarAsync()
         {
-            if (cmbAreas.SelectedValue == null || string.IsNullOrWhiteSpace(txtUsuario.Text) || string.IsNullOrWhiteSpace(txtNombre.Text))
+            if (cmbAreas.SelectedValue == null || cmbUsuario.SelectedValue == null || string.IsNullOrWhiteSpace(txtNombre.Text))
             {
                 MessageBox.Show("Complete todos los campos");
                 return;
@@ -92,7 +110,7 @@ namespace Cerene_App
             var datos = new
             {
                 id_area = Convert.ToInt32(cmbAreas.SelectedValue),
-                id_usuario = int.TryParse(txtUsuario.Text, out int uid) ? uid : 0,
+                id_usuario = Convert.ToInt32(cmbUsuario.SelectedValue),
                 nombre_examen = txtNombre.Text
             };
 
@@ -127,6 +145,15 @@ namespace Cerene_App
             public int id_area { get; set; }
             public string nombre_area { get; set; } = string.Empty;
             public string descripcion { get; set; } = string.Empty;
+        }
+
+        private class Usuario
+        {
+            public int id { get; set; }
+
+            public string name { get; set; } = string.Empty;   
+            
+
         }
 
         private class ExamenResponse

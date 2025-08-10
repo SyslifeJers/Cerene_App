@@ -21,7 +21,8 @@ namespace Cerene_App
             var payload = new { id_examen = idExamen, preguntas };
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            await _http.PostAsync(Link, content);
+            Link = ApiConfig.InsertPreguntas;
+                await _http.PostAsync(Link, content);
         }
     }
 }
