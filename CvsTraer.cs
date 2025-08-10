@@ -26,10 +26,10 @@ namespace Cerene_App
         public int Numero { get; set; }
         public string Texto { get; set; }
         public TipoPregunta Tipo { get; set; }
-        public string Seccion { get; set; }
+        public Seccion? Seccion { get; set; }
         public bool Multiple { get; set; }
         public List<OpcionRespuesta> Opciones { get; set; } = new();
-        public OpcionRespuesta RespuestaCorrecta { get; set; }
+        public OpcionRespuesta? RespuestaCorrecta { get; set; }
         public string OpcionesResumen => string.Join(" | ", Opciones.Select(o => o.Texto));
     }
 
