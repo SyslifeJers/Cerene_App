@@ -42,7 +42,12 @@ namespace Cerene_App
                 Left = 40
             };
 
-            btnConvertPdf.Click += (s, e) => MessageBox.Show("Funcionalidad en desarrollo");
+            btnConvertPdf.Click += (s, e) =>
+            {
+                using var form = new PdfConverterForm();
+                form.ShowDialog();
+            };
+
             btnUpload.Click += (s, e) =>
             {
                 using var form = new Form1();
