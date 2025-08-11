@@ -47,6 +47,7 @@ namespace Cerene_App
                 using var form = new PdfConverterForm();
                 form.ShowDialog();
             };
+
             btnUpload.Click += (s, e) =>
             {
                 using var form = new Form1();
