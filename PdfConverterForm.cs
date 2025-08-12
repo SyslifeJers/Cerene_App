@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ClosedXML.Excel;
+
 
 namespace Cerene_App
 {
@@ -14,6 +16,9 @@ namespace Cerene_App
     {
         private readonly List<Pregunta> listaPreguntas = new();
         private readonly Button btnCargarPDF = new();
+
+        private readonly Button btnExportExcel = new();
+
         private readonly DataGridView dataGridView1 = new();
 
         public PdfConverterForm()
@@ -34,6 +39,13 @@ namespace Cerene_App
             btnCargarPDF.Left = 10;
             btnCargarPDF.Click += btnCargarPDF_Click;
 
+            btnExportExcel.Text = "Generar Excel";
+            btnExportExcel.Top = 10;
+            btnExportExcel.Left = btnCargarPDF.Right + 10;
+            btnExportExcel.Visible = false;
+            btnExportExcel.Click += btnExportExcel_Click;
+
+
             dataGridView1.Top = btnCargarPDF.Bottom + 10;
             dataGridView1.Left = 10;
             dataGridView1.Width = ClientSize.Width - 20;
@@ -41,6 +53,9 @@ namespace Cerene_App
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
             Controls.Add(btnCargarPDF);
+
+            Controls.Add(btnExportExcel);
+
             Controls.Add(dataGridView1);
 
             UIStyleHelper.ApplyTheme(this);
@@ -58,6 +73,9 @@ namespace Cerene_App
                 listaPreguntas.Clear();
                 listaPreguntas.AddRange(preguntas);
                 MostrarEnTabla();
+
+                btnExportExcel.Visible = listaPreguntas.Count > 0;
+
             }
         }
 
@@ -148,6 +166,83 @@ namespace Cerene_App
                 dataGridView1.Rows.Add(p.Numero.ToString(), p.Texto, p.Tipo.ToString(), p.OpcionesResumen, p.RespuestaCorrecta?.Texto);
             }
         }
+
+        private void btnExportExcel_Click(object? sender, EventArgs e)
+        {
+            using SaveFileDialog sfd = new();
+            sfd.Filter = "Excel files (*.xlsx)|*.xlsx";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                GenerarExcel(sfd.FileName);
+                MessageBox.Show("Archivo Excel generado correctamente");
+            }
+        }
+
+        private void GenerarExcel(string ruta)
+        {
+            var wb = new XLWorkbook();
+            var wsOpciones = wb.AddWorksheet("Opciones");
+            wsOpciones.Cell(1, 1).Value = "Id";
+            wsOpciones.Cell(1, 2).Value = "Texto";
+
+            var wsPreguntas = wb.AddWorksheet("Preguntas");
+            wsPreguntas.Cell(1, 1).Value = "Texto";
+            wsPreguntas.Cell(1, 2).Value = "Tipo";
+            wsPreguntas.Cell(1, 3).Value = "Seccion";
+            wsPreguntas.Cell(1, 4).Value = "Multiple";
+            wsPreguntas.Cell(1, 5).Value = "Opciones";
+            wsPreguntas.Cell(1, 6).Value = "Respuesta";
+
+            var catalogo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            int nextId = 1;
+            foreach (var p in listaPreguntas)
+            {
+                foreach (var op in p.Opciones)
+                {
+                    var texto = op.Texto.Trim();
+                    if (!catalogo.TryGetValue(texto, out int id))
+                    {
+                        id = nextId++;
+                        catalogo[texto] = id;
+                    }
+                    op.Id = id;
+                }
+
+                if (p.RespuestaCorrecta != null)
+                {
+                    var respTexto = p.RespuestaCorrecta.Texto.Trim();
+                    if (!catalogo.TryGetValue(respTexto, out int id))
+                    {
+                        id = nextId++;
+                        catalogo[respTexto] = id;
+                    }
+                    p.RespuestaCorrecta.Id = id;
+                }
+            }
+
+            int fila = 2;
+            foreach (var kv in catalogo.OrderBy(k => k.Value))
+            {
+                wsOpciones.Cell(fila, 1).Value = kv.Value;
+                wsOpciones.Cell(fila, 2).Value = kv.Key;
+                fila++;
+            }
+
+            fila = 2;
+            foreach (var p in listaPreguntas)
+            {
+                wsPreguntas.Cell(fila, 1).Value = p.Texto;
+                wsPreguntas.Cell(fila, 2).Value = p.Tipo.ToString();
+                wsPreguntas.Cell(fila, 3).Value = p.Seccion?.Nombre ?? string.Empty;
+                wsPreguntas.Cell(fila, 4).Value = p.Multiple;
+                wsPreguntas.Cell(fila, 5).Value = string.Join(",", p.Opciones.Select(o => o.Id));
+                wsPreguntas.Cell(fila, 6).Value = p.RespuestaCorrecta?.Id;
+                fila++;
+            }
+
+            wb.SaveAs(ruta);
+        }
+
     }
 }
 
