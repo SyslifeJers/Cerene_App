@@ -9,13 +9,16 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ClosedXML.Excel;
 
+
 namespace Cerene_App
 {
     public class PdfConverterForm : Form
     {
         private readonly List<Pregunta> listaPreguntas = new();
         private readonly Button btnCargarPDF = new();
+
         private readonly Button btnExportExcel = new();
+
         private readonly DataGridView dataGridView1 = new();
 
         public PdfConverterForm()
@@ -42,6 +45,7 @@ namespace Cerene_App
             btnExportExcel.Visible = false;
             btnExportExcel.Click += btnExportExcel_Click;
 
+
             dataGridView1.Top = btnCargarPDF.Bottom + 10;
             dataGridView1.Left = 10;
             dataGridView1.Width = ClientSize.Width - 20;
@@ -49,7 +53,9 @@ namespace Cerene_App
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
             Controls.Add(btnCargarPDF);
+
             Controls.Add(btnExportExcel);
+
             Controls.Add(dataGridView1);
 
             UIStyleHelper.ApplyTheme(this);
@@ -67,7 +73,9 @@ namespace Cerene_App
                 listaPreguntas.Clear();
                 listaPreguntas.AddRange(preguntas);
                 MostrarEnTabla();
+
                 btnExportExcel.Visible = listaPreguntas.Count > 0;
+
             }
         }
 
@@ -234,6 +242,7 @@ namespace Cerene_App
 
             wb.SaveAs(ruta);
         }
+
     }
 }
 
